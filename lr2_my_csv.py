@@ -8,6 +8,7 @@ def open_table():
         with open('books.csv', 'r', encoding='cp1251') as csvfile:
             table = list(reader(csvfile, delimiter=';'))
             # print(table[0])
+            # input()
             return table[1:]
     except FileNotFoundError:
         print('Файл не найден!')
@@ -24,18 +25,33 @@ def search_autor(table, autor, lim_price=200):
     return [x[1] for x in f_table]
 
 
-def generator_links(table):
-    table = random.sample(table, 20)
+def generator_links(table, count=20):
+    table = random.sample(table, count)
     return [f'{x[3]}. {x[1]} - {x[6].split()[0].split('.')[-1]}' for x in table]
+
+
+def tags_no_dubl(table):
+    tags = set()
+    for i in table:
+        for j in i[-1].split('#'):
+            tag = j.strip()
+            if tag != '':
+                tags.add(tag)
+    return list(tags)
+
+
+def most_popular_books(table, count=20):
+    table = sorted(table, reverse=True, key=lambda x: int(x[8]))
+    return [(x[1], x[3], x[8]) for x in table[:count]]
 
 
 if __name__ == '__main__':
     table = open_table()
     if table == 0:
-        exit() 
+        exit()
     while True:
         os.system('clear')
-        print('Меню:\n1 - Число записей, им. Название более 30 симв.\n2 - Поиск по автору (ограничение до 200р)\n3 - Генератор библиографических ссылок (20 записей)\n0 - Выход')
+        print('Меню:\n1 - Число записей, им. Название более 30 симв.\n2 - Поиск по автору (ограничение до 200р)\n3 - Генератор библиографических ссылок (20 записей)\n4 - Перечень тегов без повторений\n5 - Самые популярные 20 книг\n0 - Выход')
         menu = input('Выберите пункт меню: ')
         match menu:
             case '1':
@@ -50,6 +66,12 @@ if __name__ == '__main__':
                     for i, link in enumerate(links):
                         t.write(f'{i + 1}. {link}\n')
                 print('\nВывод произведён в файл result.txt')
+            case '4':
+                for tag in tags_no_dubl(table):
+                    print('#', tag)
+            case '5':
+                for i, book in enumerate(most_popular_books(table)):
+                    print(f'{i+1}. \"{book[0]}\" {book[1]} (Кол-во выдач:{book[2]})')
             case '0':
                 break
             case _:
